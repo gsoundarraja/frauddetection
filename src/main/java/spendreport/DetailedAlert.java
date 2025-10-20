@@ -1,6 +1,8 @@
 package spendreport;
 
-public class DetailedAlert {
+public class DetailedAlert implements java.io.Serializable {
+    private static final long serialVersionUID = 1L;
+
     private Long accountId;
     private String timestamp;
     private double amount;
@@ -18,4 +20,13 @@ public class DetailedAlert {
     public double getAmount() { return amount; }
     public String getZipCode() { return zipCode; }
 
+    @Override
+    public String toString() {
+        return "DetailedAlert{" +
+                "accountId=" + accountId +
+                ", timestamp='" + timestamp + '\'' +
+                ", amount=" + amount +
+                ", zipCode='" + zipCode + '\'' +
+                '}';
+    }
 }

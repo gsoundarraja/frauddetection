@@ -1,6 +1,8 @@
 package spendreport;
 
-public class DetailedTransaction {
+public class DetailedTransaction implements java.io.Serializable {
+    private static final long serialVersionUID = 1L;
+
     private Long accountId;
     private double amount;
     private String timestamp;
@@ -22,5 +24,4 @@ public class DetailedTransaction {
     public void setTimestamp(String timestamp) { this.timestamp = timestamp; }
     public void setAmount(double amount) { this.amount = amount; }
     public void setZipCode(String zipCode) { this.zipCode = zipCode; }
-
 }
