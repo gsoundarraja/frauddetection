@@ -46,39 +46,36 @@ public class DetailedFraudDetector extends KeyedProcessFunction<Long, DetailedTr
             Context context,
             Collector<DetailedAlert> collector) throws Exception {
 
-        // Get the current flag state
         Boolean lastTransactionWasSmall = flagState.value();
 
         // Check if current transaction is LARGE (>= $500)
         if (transaction.getAmount() >= LARGE_AMOUNT) {
-            // Check if we previously had a small transaction for this account
             if (lastTransactionWasSmall != null && lastTransactionWasSmall) {
-                // Get the last small transaction details
                 DetailedTransaction lastSmall = lastSmallTransactionState.value();
 
-                // Check if zip codes match
                 if (lastSmall != null && lastSmall.getZipCode().equals(transaction.getZipCode())) {
-                    // FRAUD DETECTED! Same account, small->large, same zip code
-                    DetailedAlert alert = new DetailedAlert(
-                            transaction.getAccountId(),
-                            transaction.getTimestamp(),
-                            transaction.getAmount(),
-                            transaction.getZipCode()
-                    );
-                    collector.collect(alert);
+                    // **NEW: Check if within 1 minute**
+                    long timeDifference = transaction.getTimestamp() - lastSmall.getTimestamp();
+
+                    if (timeDifference <= ONE_MINUTE && timeDifference >= 0) {
+                        // FRAUD DETECTED!
+                        DetailedAlert alert = new DetailedAlert(
+                                transaction.getAccountId(),
+                                transaction.getTimestamp(),
+                                transaction.getAmount(),
+                                transaction.getZipCode()
+                        );
+                        collector.collect(alert);
+                    }
                 }
             }
-
-            // Clean up - reset state after checking large transaction
             flagState.clear();
             lastSmallTransactionState.clear();
         }
 
         // Check if current transaction is SMALL (< $10)
         if (transaction.getAmount() < SMALL_AMOUNT) {
-            // Mark that we saw a small transaction
             flagState.update(true);
-            // Save the small transaction details (including zip code)
             lastSmallTransactionState.update(transaction);
         }
     }

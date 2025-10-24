@@ -19,9 +19,11 @@ public class DetailedTransactionSource implements SourceFunction<DetailedTransac
             String zip = ZIP_CODES[random.nextInt(ZIP_CODES.length)];
             double amount = 0.01 + (1000.0 - 0.01) * random.nextDouble();
 
-            timestamp += 1000;
+            timestamp += 1000;  // Increment by 1 second
 
-            DetailedTransaction txn = new DetailedTransaction(accountId, amount, String.valueOf(timestamp), zip);
+            // **FIXED: Pass long timestamp directly, not String.valueOf(timestamp)**
+            DetailedTransaction txn = new DetailedTransaction(accountId, timestamp, amount, zip);
+
             System.out.println("Generated: Account=" + accountId + ", Amount=$" + String.format("%.2f", amount) + ", Zip=" + zip);
             ctx.collect(txn);
 
