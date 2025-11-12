@@ -13,7 +13,6 @@ import org.apache.flink.util.Collector;
  * 3. Within the same account
  */
 public class DetailedFraudDetector extends KeyedProcessFunction<Long, DetailedTransaction, DetailedAlert> {
-
     private static final long serialVersionUID = 1L;
     private static final double SMALL_AMOUNT = 10.00;
     private static final double LARGE_AMOUNT = 500.00;
@@ -21,7 +20,6 @@ public class DetailedFraudDetector extends KeyedProcessFunction<Long, DetailedTr
 
     // State to remember if we saw a small transaction
     private transient ValueState<Boolean> flagState;
-
     // State to remember the last small transaction details (including zip code)
     private transient ValueState<DetailedTransaction> lastSmallTransactionState;
 
@@ -46,36 +44,38 @@ public class DetailedFraudDetector extends KeyedProcessFunction<Long, DetailedTr
             Context context,
             Collector<DetailedAlert> collector) throws Exception {
 
+        // Get the current flag state
         Boolean lastTransactionWasSmall = flagState.value();
 
         // Check if current transaction is LARGE (>= $500)
         if (transaction.getAmount() >= LARGE_AMOUNT) {
+            // Check if we previously had a small transaction for this account
             if (lastTransactionWasSmall != null && lastTransactionWasSmall) {
+                // Get the last small transaction details
                 DetailedTransaction lastSmall = lastSmallTransactionState.value();
 
+                // Check if zip codes match
                 if (lastSmall != null && lastSmall.getZipCode().equals(transaction.getZipCode())) {
-                    // **NEW: Check if within 1 minute**
-                    long timeDifference = transaction.getTimestamp() - lastSmall.getTimestamp();
-
-                    if (timeDifference <= ONE_MINUTE && timeDifference >= 0) {
-                        // FRAUD DETECTED!
-                        DetailedAlert alert = new DetailedAlert(
-                                transaction.getAccountId(),
-                                transaction.getTimestamp(),
-                                transaction.getAmount(),
-                                transaction.getZipCode()
-                        );
-                        collector.collect(alert);
-                    }
+                    // FRAUD DETECTED! Same account, small->large, same zip code
+                    DetailedAlert alert = new DetailedAlert(
+                            transaction.getAccountId(),
+                            transaction.getTimestamp(),
+                            transaction.getAmount(),
+                            transaction.getZipCode()
+                    );
+                    collector.collect(alert);
                 }
             }
+            // Clean up - reset state after checking large transaction
             flagState.clear();
             lastSmallTransactionState.clear();
         }
 
         // Check if current transaction is SMALL (< $10)
         if (transaction.getAmount() < SMALL_AMOUNT) {
+            // Mark that we saw a small transaction
             flagState.update(true);
+            // Save the small transaction details (including zip code)
             lastSmallTransactionState.update(transaction);
         }
     }

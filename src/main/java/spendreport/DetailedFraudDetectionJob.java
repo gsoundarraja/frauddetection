@@ -12,7 +12,6 @@ import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
  * in the same zip code.
  */
 public class DetailedFraudDetectionJob {
-
     public static void main(String[] args) throws Exception {
         // Set up the streaming execution environment
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();

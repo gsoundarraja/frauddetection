@@ -4,11 +4,11 @@ public class DetailedAlert implements java.io.Serializable {
     private static final long serialVersionUID = 1L;
 
     private Long accountId;
-    private long timestamp;
+    private String timestamp;
     private double amount;
     private String zipCode;
 
-    public DetailedAlert(Long accountId, long timestamp, double amount, String zipCode) {
+    public DetailedAlert(Long accountId, String timestamp, double amount, String zipCode) {
         this.accountId = accountId;
         this.timestamp = timestamp;
         this.amount = amount;
@@ -16,7 +16,7 @@ public class DetailedAlert implements java.io.Serializable {
     }
 
     public Long getAccountId() { return accountId; }
-    public long getTimestamp() { return timestamp; }
+    public String getTimestamp() { return timestamp; }
     public double getAmount() { return amount; }
     public String getZipCode() { return zipCode; }
 
